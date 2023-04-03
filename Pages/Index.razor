@@ -1,0 +1,52 @@
+﻿@inject Shopping_List.Data.ShoppingContext context
+@page "/"
+
+<h1>Shopping List</h1>
+
+<h3>Enter your items that you need purchased</h3>
+
+<!-- Bind the input to item.Name -->
+<input type="text" @bind="item.Name" />
+
+<button class="btn btn-primary" @onclick="AddItem">Add Item</button>
+
+@foreach (var listItem in items)
+{
+    <p>@listItem.Name <span @onclick="() => DeleteItem(listItem.ID)" >X</span></p>
+}
+
+@code {
+    List<ShoppingItem> items = new List<ShoppingItem>();
+
+    // Initialize the item object
+    private ShoppingItem item { get; set; } = new ShoppingItem();
+
+    public async Task AddItem()
+    {
+        context.Shopping_List.Add(item);
+        await context.SaveChangesAsync();
+
+        items.Add(item);
+
+        // Reset the item object for the next input
+        item = new ShoppingItem();
+    }
+
+
+    // Define a delete method that takes the ID of the item to delete as a parameter
+    private async Task DeleteItem(int itemId)
+    {
+        // Find the item to delete based on its ID
+        var itemToDelete = items.FirstOrDefault(item => item.ID == itemId);
+
+        // Remove the item from the list
+        if (itemToDelete != null)
+        {
+            items.Remove(itemToDelete);
+
+            // Remove the item from the database
+            context.Shopping_List.Remove(itemToDelete);
+            await context.SaveChangesAsync();
+        }
+    }
+}
